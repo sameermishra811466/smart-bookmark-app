@@ -20,6 +20,12 @@ export default function Home() {
   getUser()
   fetchBookmarks()
 
+  const { data: authListener } = supabase.auth.onAuthStateChange(
+    (_event, session) => {
+      setUser(session?.user ?? null)
+    }
+  )
+
   const channel = supabase
     .channel("bookmarks")
     .on(
@@ -30,9 +36,11 @@ export default function Home() {
     .subscribe()
 
   return () => {
+    authListener.subscription.unsubscribe()
     supabase.removeChannel(channel)
   }
 }, [])
+
 
   const getUser = async () => {
     const { data } = await supabase.auth.getUser()
